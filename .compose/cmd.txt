@@ -1,0 +1,2 @@
+./mc config host add myminio http://127.0.0.1:9000 AKIAIOSFODNN7EXAMPLE wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+./mc admin trace -v myminio
