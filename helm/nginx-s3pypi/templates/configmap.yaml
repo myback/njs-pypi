@@ -1,0 +1,10 @@
+{{- if or .Values.environments }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "nginx-s3pypi.fullname" . }}
+  labels:
+{{ include "nginx-s3pypi.labels" . | indent 4 }}
+data:
+{{ toYaml .Values.environments | indent 2 }}
+{{- end }}

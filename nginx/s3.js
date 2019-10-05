@@ -18,8 +18,10 @@ function date_now() {
 function s3_endpoint() {
     var proto,
         host = process.env.S3_ENDPOINT ? process.env.S3_ENDPOINT : 's3.amazonaws.com';
+
     if (/[Tt]rue/.test(process.env.S3_SSL_ON)) {
         proto = 'https://';
+
     } else {
         proto = 'http://';
     }
@@ -36,8 +38,8 @@ Object.prototype.toHTML = function() {
         if (xmlData.CommonPrefixes instanceof Array) {
             xmlData.CommonPrefixes.forEach(function(e){
                 //out.push('<a href="/' + e.value.Prefix.value + '">' + e.value.Prefix.value.replace(/\//g, '') + '</a>');
-                out.push('<a href="/' + e.Prefix + '">' + e.Prefix.replace(/\//g, '') + '</a>');
-            });
+                out.push('<a href="/' + e.Prefix + '">' + e.Prefix.replace(/\//g, '') + '</a>');});
+
         } else {
             //out.push('<a href="/' + xmlData.CommonPrefixes.value.Prefix.value + '">' + xmlData.CommonPrefixes.value.Prefix.value.replace(/\//g, '') + '</a>');
             out.push('<a href="/' + xmlData.CommonPrefixes.Prefix + '">' + xmlData.CommonPrefixes.Prefix.replace(/\//g, '') + '</a>');
@@ -46,13 +48,14 @@ Object.prototype.toHTML = function() {
 
     if ('Contents' in xmlData) {
         var cont = xmlData.Contents;
+
         if (cont instanceof Array) {
             cont.forEach(function(e){
                 if (!e.Key.endsWith('/')) {
                     //out.push('<a href="/' + e.value.Key + '">' + e.value.Key.split('/').slice(-1) + '</a>');
                     out.push('<a href="/' + e.Key + '">' + e.Key.split('/').slice(-1) + '</a>');
-                }
-            });
+                }});
+
         } else {
             //var val = cont.value.Key.value.split('/').slice(-1);
             //out.push('<a href="/' +  + '">' + val + '</a>');
@@ -166,6 +169,7 @@ function gitlab_auth(r) {
             r.return(403, "");
             return
         }
+
     } else {
         r.return(401, "");
         return
