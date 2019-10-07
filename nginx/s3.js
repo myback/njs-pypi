@@ -16,15 +16,8 @@ function date_now() {
 }
 
 function s3_endpoint() {
-    var proto,
+    var proto = /[Tt]rue/.test(process.env.S3_SSL_DISABLE) ? proto = 'http://' : proto = 'https://',
         host = process.env.S3_ENDPOINT ? process.env.S3_ENDPOINT : 's3.amazonaws.com';
-
-    if (/[Tt]rue/.test(process.env.S3_SSL_ON)) {
-        proto = 'https://';
-
-    } else {
-        proto = 'http://';
-    }
 
     return proto + host
 }
