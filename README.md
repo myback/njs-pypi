@@ -83,7 +83,7 @@ S3_ACCESS_KEY - Required.
 S3_SECRET_KEY - Required.
 ```
 
-# Use authentication only for uploading
+# Use authentication for upload only
 **nginx.conf**
 ```
 ...
