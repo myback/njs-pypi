@@ -2,8 +2,8 @@
 Python Package Repository based on Nginx with [NginScript](https://github.com/nginx/njs) with storage backend in S3 bucket.
 
 Providing minimal [PEP503](https://www.python.org/dev/peps/pep-0503/) support.
-# Quick Start
-## Docker
+## Quick Start
+### Docker
 - For use AWS S3
 ```sh
 docker run -d -p 8080:8080 -e S3_BUCKET=your_backet_name -e S3_ACCESS_KEY=your_aws_access_key -e S3_SECRET_KEY=your_aws_secret_key -e DISABLE_AUTH=true mybackspace/nginx-s3pypi
@@ -12,13 +12,13 @@ docker run -d -p 8080:8080 -e S3_BUCKET=your_backet_name -e S3_ACCESS_KEY=your_a
 ```sh
 docker run -d -p 8080:8080 -e S3_BUCKET=your_backet_name -e S3_ACCESS_KEY=your_provider_access_key -e S3_SECRET_KEY=your_provider_secret_key -e S3_ENDPOINT=s3.example.com -e DISABLE_AUTH=true mybackspace/nginx-s3pypi
 ```
-## Docker-compose
+### Docker-compose
 ```sh
 git clone https://github.com/myback/nginx-s3pypi.git
 cd nginx-s3pypi
 docker-compose up -d
 ```
-## Kubernetes
+### Kubernetes
 ```sh
 git clone https://github.com/myback/nginx-s3pypi.git
 cd nginx-s3pypi
@@ -29,22 +29,22 @@ vi helm/nginx-s3pypi/values.yaml
 # And install
 helm install helm/nginx-s3pypi --name=nginx-s3pypi
 ```
-# Usage
-## PIP
-### Command line
+## Usage
+### PIP
+#### Command line
 ```sh
 pip install pkg_name -i localhost:8080
 
 # If use authentication
 pip install pkg_name -i http://login:password@localhost:8080
 ```
-### pip.conf
+#### pip.conf
 ```ini
 [global]
 timeout = 60
 index-url = http://login:password@localhost:8080
 ```
-### Gitlab pipeline
+#### Gitlab pipeline
 ```yaml
 pkg:upload:
   image: byrnedo/alpine-curl
@@ -53,7 +53,7 @@ pkg:upload:
   script:
     - curl -u "gitlab-ci-token:${CI_JOB_TOKEN}" -T "/path/to/${PKG_NAME}" "https://url2pypi/${PKG_NAME}/${PKG_NAME}-${CI_COMMIT_TAG}.tgz"
 ```
-### curl
+#### curl
 ```sh
 # List all packages
 curl http://localhost:8080/
@@ -64,7 +64,7 @@ curl -u 'login:password' http://localhost:8080/
 curl -u 'login:password' -T /path/to/pkg_name http://localhost:8080/pkg_name/pkg_name-1.0.0.tgz
 ```
 
-# Environment variables settings
+## Environment variables settings
 ```
 DEBUG_LOG - Enable Nginx debug log. Default: false
 
@@ -83,8 +83,8 @@ S3_ACCESS_KEY - Required.
 S3_SECRET_KEY - Required.
 ```
 
-# Use authentication for upload only
-**nginx.conf**
+## Use authentication for upload only
+#### **`nginx.conf`**
 ```
 ...
 
