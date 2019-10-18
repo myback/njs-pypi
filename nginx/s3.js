@@ -30,12 +30,12 @@ Object.prototype.toHTML = function() {
     if ('CommonPrefixes' in xmlData) {
         if (xmlData.CommonPrefixes instanceof Array) {
             xmlData.CommonPrefixes.forEach(function(e){
-                //out.push('<a href="/' + e.value.Prefix.value + '">' + e.value.Prefix.value.replace(/\//g, '') + '</a>');
-                out.push('<a href="/' + e.Prefix + '">' + e.Prefix.replace(/\//g, '') + '</a>');});
+                //out.push(`<a href="/${e.value.Prefix.value}">${e.value.Prefix.value.replace(/\//g, '')}</a>`);
+                out.push(`<a href="/${e.Prefix}">${e.Prefix.replace(/\//g, '')}</a>`);});
 
         } else {
-            //out.push('<a href="/' + xmlData.CommonPrefixes.value.Prefix.value + '">' + xmlData.CommonPrefixes.value.Prefix.value.replace(/\//g, '') + '</a>');
-            out.push('<a href="/' + xmlData.CommonPrefixes.Prefix + '">' + xmlData.CommonPrefixes.Prefix.replace(/\//g, '') + '</a>');
+            //out.push(`<a href="/${xmlData.CommonPrefixes.value.Prefix.value}">${xmlData.CommonPrefixes.value.Prefix.value.replace(/\//g, '')}</a>`);
+            out.push(`<a href="/${xmlData.CommonPrefixes.Prefix}">${xmlData.CommonPrefixes.Prefix.replace(/\//g, '')}</a>`);
         }
     }
 
@@ -45,14 +45,12 @@ Object.prototype.toHTML = function() {
         if (cont instanceof Array) {
             cont.forEach(function(e){
                 if (!e.Key.endsWith('/')) {
-                    //out.push('<a href="/' + e.value.Key + '">' + e.value.Key.split('/').slice(-1) + '</a>');
-                    out.push('<a href="/' + e.Key + '">' + e.Key.split('/').slice(-1) + '</a>');
+                    //out.push(`<a href="/${e.value.Key}">${e.value.Key.split('/').slice(-1)}</a>`);
+                    out.push(`<a href="/${e.Key}">${e.Key.split('/').slice(-1)}</a>`);
                 }});
 
         } else {
-            //var val = cont.value.Key.value.split('/').slice(-1);
-            //out.push('<a href="/' +  + '">' + val + '</a>');
-            out.push('<a href="/' + cont.Key + '">' + cont.Key + '</a>');
+            out.push(`<a href="/${cont.Key}">${cont.Key}</a>`);
         }
     }
 
@@ -87,6 +85,7 @@ String.prototype.XMLParser = function xml_parse(xml) {
         if (bodyValue === '') {
             out[bodyKey] = '';
 
+        // string check
         } else if (reS.test(bodyValue)) {
             var regexString = new RegExp(reS);
             var value = regexString.exec(bodyValue);
@@ -96,6 +95,7 @@ String.prototype.XMLParser = function xml_parse(xml) {
             //};
             out[bodyKey] = value[0].replace(/\"/g, '');
 
+        // object check
         } else if (/<[^>]+>.*?<\/[^>]+>/.test(bodyValue)) {
             //var newObj = {
             //  'tags': tags,
@@ -156,7 +156,7 @@ function gitlab_auth(r) {
             password = credentials.substr(credentials.indexOf(':') + 1);
 
         if (user != '' && password != '') {
-            auth_body = 'grant_type=password&username=' + user + '&password=' + password;
+            auth_body = `grant_type=password&username=${user}&password=${password}`;
 
         } else {
             r.return(403, "");
@@ -214,5 +214,5 @@ function s3_request(r) {
         s3_sub_uri = '/?delimiter=/';
     }
 
-    r.subrequest('/bucket-query' + '/' + s3_bucket + s3_sub_uri, { method: r.method }, sub)
+    r.subrequest('/bucket-query/' + s3_bucket + s3_sub_uri, { method: r.method }, sub)
 }
