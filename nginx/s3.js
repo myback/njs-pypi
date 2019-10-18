@@ -156,25 +156,17 @@ function gitlab_auth(r) {
             user = credentials.substr(0, credentials.indexOf(':')),
             password = credentials.substr(credentials.indexOf(':') + 1);
 
-        if (user != '' && password != '') {
-            auth_body = `grant_type=password&username=${user}&password=${password}`;
-
-        } else {
-            r.return(403, "");
-            return
-        }
+        r.subrequest('/gitlab',
+            {method: 'POST', body: `grant_type=password&username=${user}&password=${password}`},
+            function(res) {
+                r.return(res.status, res.responseBody);
+            }
+        );
 
     } else {
         r.return(401, "");
         return
     }
-
-    r.subrequest('/gitlab',
-        {method: 'POST', body: auth_body},
-        function(res) {
-            r.return(res.status, res.responseBody);
-        }
-    );
 }
 
 function s3_request(r) {
