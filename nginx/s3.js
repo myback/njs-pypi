@@ -96,6 +96,7 @@ String.prototype.XMLParser = function xml_parse(xml) {
             out[bodyKey] = value[0].replace(/\"/g, '');
 
         // object check
+        // https://github.com/nginx/njs/issues/225
         } else if (/<[^>]+>.*?<\/[^>]+>/.test(bodyValue)) {
             //var newObj = {
             //  'tags': tags,
@@ -130,13 +131,13 @@ function s3_sign_header(r) {
         string_to_sign = r.method + '\n\n\n\n';
 
     if (r.method == 'PUT' && _headers['x-amz-acl']) {
-        string_to_sign += 'x-amz-acl:' + _headers['x-amz-acl'] + '\n';
+        string_to_sign += `x-amz-acl:${_headers['x-amz-acl']}\n`;
     }
 
-    string_to_sign += 'x-amz-date:' + date_now() + '\n';
+    string_to_sign += `x-amz-date:${date_now()}\n`;
     string_to_sign += r.uri.endsWith('/') ? '/' + s3_bucket + '/' : r.variables.s3_uri;
 
-    return 'AWS ' + process.env.S3_ACCESS_KEY + ':' + crypt.createHmac('sha1', process.env.S3_SECRET_KEY).update(string_to_sign).digest('base64');
+    return `AWS ${process.env.S3_ACCESS_KEY}:${crypt.createHmac('sha1', process.env.S3_SECRET_KEY).update(string_to_sign).digest('base64')}`;
 }
 
 function gitlab_auth(r) {
@@ -214,5 +215,5 @@ function s3_request(r) {
         s3_sub_uri = '/?delimiter=/';
     }
 
-    r.subrequest('/bucket-query/' + s3_bucket + s3_sub_uri, { method: r.method }, sub)
+    r.subrequest(`/bucket-query/${s3_bucket}${s3_sub_uri}`, { method: r.method }, sub)
 }
