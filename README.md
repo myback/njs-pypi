@@ -16,6 +16,23 @@ docker run -d -p 8080:8080 -e S3_BUCKET=your_backet_name -e S3_ACCESS_KEY=your_p
 ```sh
 git clone https://github.com/myback/nginx-s3pypi.git
 cd nginx-s3pypi
+```
+```nginx
+nginx.conf
+
+...
+
+server {
+        listen 8080;
+        server_name _;
+
+        # resolver        8.8.8.8       valid=300s;
+        resolver                     127.0.0.11;  # docker
+        resolver_timeout              3s;
+
+...
+```
+```sh
 docker-compose up -d
 ```
 ### Kubernetes
@@ -84,8 +101,9 @@ S3_SECRET_KEY - Required.
 ```
 
 ## Use authentication for upload only
-#### **`nginx.conf`**
-```
+```nginx
+nginx.conf
+
 ...
 
 location ~ "^/(?<prefix>[\w]*[/]{0,1})(?<postfix>[\w\-\.]*)" {
