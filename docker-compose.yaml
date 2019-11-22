@@ -5,7 +5,7 @@ services:
     restart: always
     image: nginx:alpine
     environment:
-      # DEBUG_LOG: true
+      # DEBUG_LOG: "true"
       # GITLAB_URL: https://gitlab.example.com
       DISABLE_AUTH: "true"
       S3_SSL_DISABLE: "true"

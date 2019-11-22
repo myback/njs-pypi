@@ -1,6 +1,6 @@
 var crypt = require('crypto'),
     s3_bucket = process.env.S3_BUCKET,
-    auth_disabled = process.env.DISABLE_AUTH ? true : false,
+    auth_disabled = /[Tt]rue/.test(process.env.DISABLE_AUTH),
     s3_date = new Date().toISOString().replace(/[:\-]|\.\d{3}/g, '');
 
 function gitlab_url() {
@@ -50,7 +50,7 @@ Object.prototype.toHTML = function() {
                 }});
 
         } else {
-            out.push(`<a href="/${cont.Key}">${cont.Key}</a>`);
+            out.push(`<a href="/${cont.Key}">${cont.Key.split('/').slice(-1)}</a>`);
         }
     }
 
@@ -63,7 +63,8 @@ String.prototype.XMLParser = function xml_parse(xml) {
         out = {},
         reS = /^[^<]+/,
         reO = /<(?<key>[\w\-\.\:]+)\s*(?<tags>[^>]*)>(?<body>.*?)<\/\1>/g,
-        regexObject = new RegExp(reO);
+        regexObject = new RegExp(reO),
+        regexString = new RegExp(reS);
 
     while(regexResult = regexObject.exec(xml)) {
         var bodyKey = regexResult.groups.key,
@@ -86,8 +87,7 @@ String.prototype.XMLParser = function xml_parse(xml) {
             out[bodyKey] = '';
 
         // string check
-        } else if (reS.test(bodyValue)) {
-            var regexString = new RegExp(reS);
+        } else if (regexString.test(bodyValue)) {
             var value = regexString.exec(bodyValue);
             //out[bodyKey] = {
             //    'tags': tags,
@@ -96,8 +96,7 @@ String.prototype.XMLParser = function xml_parse(xml) {
             out[bodyKey] = value[0].replace(/\"/g, '');
 
         // object check
-        // https://github.com/nginx/njs/issues/225
-        } else if (/<[^>]+>.*?<\/[^>]+>/.test(bodyValue)) {
+        } else if (regexObject.test(bodyValue)) {
             //var newObj = {
             //  'tags': tags,
             //  'value': xml_parse(bodyValue),
@@ -140,24 +139,32 @@ function s3_sign_header(r) {
     return `AWS ${process.env.S3_ACCESS_KEY}:${crypt.createHmac('sha1', process.env.S3_SECRET_KEY).update(string_to_sign).digest('base64')}`;
 }
 
+function parseBasicAuthorization(auth_header) {
+    if (auth_header != "") {
+        var token = auth_header.split(" ");
+
+        if (token[0] == "Basic" && token.length == 2) {
+            var cred = String.bytesFrom(token[1], 'base64');
+
+            return {
+                    user: cred.substr(0, cred.indexOf(':')),
+                    password: cred.substr(cred.indexOf(':') + 1)
+                }
+        }
+    }
+}
+
 function gitlab_auth(r) {
     if (auth_disabled) {
         r.return(202, '{"auth": "disabled"}');
         return
     }
 
-    var credentials,
-        auth_body,
-        s3_uri,
-        auth_header = r.headersIn['Authorization'];
-
-    if (auth_header) {
-        var credentials = String.bytesFrom(auth_header.replace('Basic ', ''), 'base64'),
-            user = credentials.substr(0, credentials.indexOf(':')),
-            password = credentials.substr(credentials.indexOf(':') + 1);
+    if (r.headersIn['Authorization']) {
+        var cred = parseBasicAuthorization(r.headersIn['Authorization']);
 
         r.subrequest('/gitlab',
-            {method: 'POST', body: `grant_type=password&username=${user}&password=${password}`},
+            {method: 'POST', body: `grant_type=password&username=${cred.user}&password=${cred.password}`},
             function(res) {
                 r.return(res.status, res.responseBody);
             }

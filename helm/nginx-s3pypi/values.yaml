@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: mybackspace/nginx-s3pypi
-  tag: 1.0.0
+  tag: 1.0.1
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -52,7 +52,7 @@ affinity: {}
 environments:
   # DEBUG_LOG: "true"
   # GITLAB_URL: https://gitlab.example.com
-  DISABLE_AUTH: "true"
+  # DISABLE_AUTH: "true"
   S3_SSL_ON: "false"
   S3_BUCKET: pypi
   S3_ENDPOINT: minio:9000

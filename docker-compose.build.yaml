@@ -5,9 +5,9 @@ services:
     restart: always
     build: .
     environment:
-      # DEBUG_LOG: true
+      # DEBUG_LOG: "true"
       # GITLAB_URL: https://gitlab.example.com
-      DISABLE_AUTH: "true"
+      # DISABLE_AUTH: "true"
       S3_SSL_DISABLE: "true"
       S3_BUCKET: pypi
       S3_ENDPOINT: minio:9000
