@@ -64,11 +64,12 @@ index-url = http://login:password@localhost:8080
 #### Gitlab pipeline
 ```yaml
 pkg:upload:
-  image: byrnedo/alpine-curl
-  variables:
-    PKG_NAME: ${CI_PROJECT_NAME}
+  image: python:3.8-alpine3.10
   script:
-    - curl -u "gitlab-ci-token:${CI_JOB_TOKEN}" -T "/path/to/${PKG_NAME}" "https://url2pypi/${PKG_NAME}/${PKG_NAME}-${CI_COMMIT_TAG}.tgz"
+    - apk add --no-cache curl
+    - pip install setuptools wheel
+    - python setup.py sdist bdist_wheel
+    - curl -sSfT "{$(echo dist/* | tr ' ' ',')}" -u "gitlab-ci-token:${CI_JOB_TOKEN}" "https://url2pypi/${CI_PROJECT_NAME}/"
 ```
 #### curl
 ```sh
@@ -78,7 +79,7 @@ curl http://localhost:8080/
 curl -u 'login:password' http://localhost:8080/
 
 # For upload new package or update existing
-curl -u 'login:password' -T /path/to/pkg_name http://localhost:8080/pkg_name/pkg_name-1.0.0.tgz
+curl -u 'login:password' -T /path/to/pkg_name-1.0.0.tgz http://localhost:8080/pkg_name/
 ```
 
 ## Environment variables settings

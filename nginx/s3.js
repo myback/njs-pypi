@@ -15,8 +15,16 @@ function date_now() {
     return s3_date
 }
 
+// function gitlab_token() {
+//     if (!r.headersIn.hasOwnProperty('Authorization')) {
+//         return ''
+//     }
+
+//     return parseBasicAuthorization(r.headersIn['Authorization']).password
+// }
+
 function s3_endpoint() {
-    var proto = /[Tt]rue/.test(process.env.S3_SSL_DISABLE) ? proto = 'http://' : proto = 'https://',
+    var proto = /[Tt]rue/.test(process.env.S3_SSL_DISABLE) ? 'http://' : 'https://',
         host = process.env.S3_ENDPOINT ? process.env.S3_ENDPOINT : 's3.amazonaws.com';
 
     return proto + host
@@ -161,12 +169,12 @@ function gitlab_auth(r) {
     }
 
     if (r.headersIn['Authorization']) {
-        var cred = parseBasicAuthorization(r.headersIn['Authorization']);
+        // var cred = parseBasicAuthorization(r.headersIn['Authorization']);
 
         r.subrequest('/gitlab',
-            {method: 'POST', body: `grant_type=password&username=${cred.user}&password=${cred.password}`},
+            {method: 'GET', body: ''},
             function(res) {
-                r.return(res.status, res.responseBody);
+                r.return(res.status, "");
             }
         );
 
@@ -203,16 +211,17 @@ function s3_request(r) {
         }
     }
 
-    if (/^\/\w+[\/]{0,1}$/.test(r.uri)) {
+    if (/^\/[\w-]+[\/]{0,1}$/.test(r.uri)) {
         var slash = r.uri.endsWith('/') ? '' : '/';
         s3_sub_uri = '/?prefix=' + r.variables.prefix + slash;
 
-    } else if (/^\/\w+\/.+/.test(r.uri) || /^\/[\w\.\-]+$/.test(r.uri) || r.method == 'PUT') {
+    } else if (/^\/[\w-]+\/.+/.test(r.uri) || /^\/[\w\.\-]+$/.test(r.uri) || r.method == 'PUT') {
         s3_sub_uri = r.uri;
 
     } else {
         s3_sub_uri = '/?delimiter=/';
     }
 
+    r.log("s3_sub_uri: " + s3_sub_uri);
     r.subrequest(`/bucket-query/${s3_bucket}${s3_sub_uri}`, { method: r.method }, sub)
 }
