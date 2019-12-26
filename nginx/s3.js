@@ -222,6 +222,5 @@ function s3_request(r) {
         s3_sub_uri = '/?delimiter=/';
     }
 
-    r.log("s3_sub_uri: " + s3_sub_uri);
     r.subrequest(`/bucket-query/${s3_bucket}${s3_sub_uri}`, { method: r.method }, sub)
 }
