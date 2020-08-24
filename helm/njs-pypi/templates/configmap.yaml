@@ -2,9 +2,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "nginx-s3pypi.fullname" . }}
+  name: {{ include "njs-pypi.fullname" . }}
   labels:
-{{ include "nginx-s3pypi.labels" . | indent 4 }}
+    {{- include "njs-pypi.labels" . | nindent 4 }}
 data:
 {{ toYaml .Values.environments | indent 2 }}
 {{- end }}
