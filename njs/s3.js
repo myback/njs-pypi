@@ -50,6 +50,14 @@ function _parse_url(raw_url) {
     return _url
 }
 
+function debug() {
+    return debug_on
+}
+
+function ua() {
+    return _user_agent
+}
+
 function _s3_host() {
     return `${s3_bucket}.${URL.host}`
 }
@@ -66,18 +74,6 @@ function _getSignatureKey(key, dateStamp, regionName, serviceName) {
     return _sign(kService, _type_req)
 }
 
-function dt() {
-    return date_now.toISOString().replace(/[:\-]|\.\d{3}/g, '')
-}
-
-function ds() {
-    return date_now.toISOString().split('T')[0].replace(/-/g, '')
-}
-
-function ua() {
-    return _user_agent
-}
-
 function pl() {
     return _payload
 }
@@ -86,8 +82,12 @@ function s3Url() {
     return `${URL.schema}://${_s3_host()}`
 }
 
-function debug() {
-    return debug_on
+function dt() {
+    return date_now.toISOString().replace(/[:\-]|\.\d{3}/g, '')
+}
+
+function ds() {
+    return date_now.toISOString().split('T')[0].replace(/-/g, '')
 }
 
 function awsSignature(r) {
@@ -120,6 +120,7 @@ function request(r) {
     var v = r.variables;
 
     if (r.method !== 'GET' && r.method !== 'PUT') {
+        r.headersOut['Content-Type'] = "plain/text; charset=utf-8";
         r.return(405, "405: Method not allowed");
         return null
     }
@@ -127,27 +128,12 @@ function request(r) {
     function call_back(res) {
         var body = res.responseBody;
 
-        if (r.method === 'PUT' || res.status >= 300) {
-            r.headersOut['Content-Type'] = "application/xml; charset=utf-8";
-            r.return(res.status, body);
-
-        } else {
-            if (v.s3_path.endsWith('%2F') || v.s3_path.endsWith('=')) {
-                r.headersOut['Content-Type'] = "text/html; charset=utf-8";
-
-                r.return(
-                    res.status,
-                    body
-                    .replace(/\<[^>]*[\s]*\/>/g, '')
-                    .replace(/>\s+</g, '><')
-                    .XMLParser()
-                    .toHTML()
-                );
-
-            } else {
-                r.return(res.status, body);
-            }
+        if (r.method !== 'PUT' && resp.status < 400 && v.postfix === '') {
+            r.headersOut['Content-Type'] = "text/html; charset=utf-8";
+            body = toHTML(body);
         }
+
+        r.return(res.status, body);
     }
 
     var _subrequest_uri = '';
@@ -165,75 +151,26 @@ function request(r) {
     r.subrequest(`/s3-query${_subrequest_uri}`, { method: r.method }, call_back)
 }
 
-Object.prototype.toHTML = function(r) {
-    var out = [],
-        xmlData = this.ListBucketResult;
-    //xmlData = this.ListBucketResult.value;
+function toHTML(xml_str) {
+    var keysMap = {
+        'CommonPrefixes': 'Prefix',
+        'Contents': 'Key',
+    };
+    var pattern = `<k>(?<v>.*?)<\/k>`;
 
-    if ('CommonPrefixes' in xmlData) {
-        if (xmlData.CommonPrefixes instanceof Array) {
-            xmlData.CommonPrefixes.forEach(function(e){
-                //out.push(`<a href="/${e.value.Prefix.value}">${e.value.Prefix.value.replace(/\//g, '')}</a>`);
-                out.push(`<a href="/${e.Prefix}">${e.Prefix.replace(/\//g, '')}</a>`);});
+    var out = [];
+    for(var group_key in keysMap) {
+        var reS;
+        var reGroup = new RegExp(pattern.replace(/k/g, group_key), 'g');
 
-        } else {
-            //out.push(`<a href="/${xmlData.CommonPrefixes.value.Prefix.value}">${xmlData.CommonPrefixes.value.Prefix.value.replace(/\//g, '')}</a>`);
-            out.push(`<a href="/${xmlData.CommonPrefixes.Prefix}">${xmlData.CommonPrefixes.Prefix.replace(/\//g, '')}</a>`);
-        }
-    }
-
-    if ('Contents' in xmlData) {
-        var cont = xmlData.Contents;
-
-        if (cont instanceof Array) {
-            cont.forEach(function(e){
-                if (!e.Key.endsWith('/')) {
-                    //out.push(`<a href="/${e.value.Key}">${e.value.Key.split('/').slice(-1)}</a>`);
-                    out.push(`<a href="/${e.Key}">${e.Key.split('/').slice(-1)}</a>`);
-                }});
-
-        } else {
-            out.push(`<a href="/${cont.Key}">${cont.Key.split('/').slice(-1)}</a>`);
+        while(reS = reGroup.exec(xml_str)) {
+            var data = new RegExp(pattern.replace(/k/g, keysMap[group_key]), 'g');
+            var reValue = data.exec(reS);
+                out.push(`<a href="/${reValue.groups.v}">${reValue.groups.v.replace(/\//g, '')}</a>`);
         }
     }
 
     return '<html><body>\n' + out.join('</br>\n') + '\n</html></body>'
-}
-
-String.prototype.XMLParser = function xml_parse(xml) {
-    if (xml === undefined) { xml = this }
-    var reResult,
-        out = {},
-        reObj = /<(?<key>[\w\-\.\:]+)\s*(?<tags>[^>]*)>(?<value>.*?)<\/\1>/g,
-        reObject = new RegExp(reObj),
-        reString = new RegExp(/^[^<]+/);
-
-    while(reResult = reObject.exec(xml)) {
-        var v,
-            reObjTest = new RegExp(reObj),
-            bodyKey = reResult.groups.key,
-            bodyValue = reResult.groups.value;
-
-        if (reObjTest.test(bodyValue)) {
-            v = xml_parse(bodyValue);
-        } else if (reString.test(bodyValue)) {
-            v = bodyValue.replace(/\"/g, '').replace(/&quot;/g, '');
-        } else {
-            v = bodyValue;
-        }
-
-        if (bodyKey in out) {
-            if (out[bodyKey] instanceof Array) {
-                out[bodyKey].push(v);
-            } else {
-                out[bodyKey] = [out[bodyKey], v];
-            }
-
-        } else {
-            out[bodyKey] = v
-        }
-    }
-    return out
 }
 
 export default {awsSignature, s3Url, request, dt, pl, ua, debug}

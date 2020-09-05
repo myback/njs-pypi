@@ -6,7 +6,7 @@ services:
     image: nginx:1.18-alpine
     environment:
       # DEBUG: "true"
-      # AUTH_URL: https://gitlab.example.com/jwt/auth?service=container_registry
+      # AUTH_URL: https://gitlab.example.com/
       DISABLE_AUTH: "true"
       S3_SSL_DISABLE: "true"
       S3_BUCKET: mybackspace
@@ -37,7 +37,7 @@ services:
       s3_net:
         aliases:
           - minio.loc
-          - mybackspace.minio.loc
+          - myback-space.minio.loc
 
 networks:
   s3_net:
