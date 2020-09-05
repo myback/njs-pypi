@@ -7,11 +7,11 @@ Providing minimal [PEP503](https://www.python.org/dev/peps/pep-0503/) support.
 ### Docker
 - For use AWS S3
 ```sh
-docker run -d -p 8080:8080 -e S3_BUCKET=your_backet_name -e S3_ACCESS_KEY=your_aws_access_key -e S3_SECRET_KEY=your_aws_secret_key -e DISABLE_AUTH=true mybackspace/njs-pypi:2
+docker run -d -p 8080:8080 -e S3_BUCKET=your_backet_name -e S3_ACCESS_KEY=your_aws_access_key -e S3_SECRET_KEY=your_aws_secret_key -e DISABLE_AUTH=true mybackspace/njs-pypi:v2
 ```
 - For use other S3 cloud provider
 ```sh
-docker run -d -p 8080:8080 -e S3_BUCKET=your_backet_name -e S3_ACCESS_KEY=your_provider_access_key -e S3_SECRET_KEY=your_provider_secret_key -e S3_ENDPOINT=s3.provider.com -e DISABLE_AUTH=true mybackspace/njs-pypi:2
+docker run -d -p 8080:8080 -e S3_BUCKET=your_backet_name -e S3_ACCESS_KEY=your_provider_access_key -e S3_SECRET_KEY=your_provider_secret_key -e S3_ENDPOINT=s3.provider.com -e DISABLE_AUTH=true mybackspace/njs-pypi:v2
 ```
 ### Docker-compose
 ```sh
@@ -49,10 +49,10 @@ helm install helm/njs-pypi --name=njs-pypi
 ### PIP
 #### Command line
 ```sh
-pip install pkg_name -i localhost:8080
+pip install pkg_name --extra-index-url localhost:8080
 
 # If use authentication
-pip install pkg_name -i http://login:password@localhost:8080
+pip install pkg_name --extra-index-url http://login:password@localhost:8080
 ```
 #### pip.conf
 ```ini
