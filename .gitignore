@@ -1,3 +1,7 @@
-mc
 .DS_Store
+
+.vscode/
+.idea/
+
 minio_data/
+mc

@@ -1,60 +1,43 @@
-version: '2.0'
+version: '3'
 
 services:
   nginx:
     restart: always
-    image: nginx:alpine
+    image: nginx:1.18-alpine
     environment:
-      # DEBUG_LOG: "true"
-      # GITLAB_URL: https://gitlab.example.com
+      # DEBUG: "true"
+      # AUTH_URL: https://gitlab.example.com
       DISABLE_AUTH: "true"
       S3_SSL_DISABLE: "true"
-      S3_BUCKET: pypi
-      S3_ENDPOINT: minio:9000
+      S3_BUCKET: myback-space
+      S3_ENDPOINT: minio.loc:9000
       S3_ACCESS_KEY: AKIAIOSFODNN7EXAMPLE
       S3_SECRET_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-      # MINIO_DOMAIN: minio.loc
     volumes:
-      - ./nginx/s3.js:/etc/nginx/s3.js:ro
+      - ./njs:/etc/nginx/njs:ro
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
       - 8080:8080
-    # command: [nginx-debug, '-g', 'daemon off;']
-    # networks:
-    #   s3_net:
+    networks:
+      s3_net:
   minio:
     restart: always
-    image: minio/minio:RELEASE.2019-10-02T21-19-38Z
+    image: minio/minio:RELEASE.2020-08-18T19-41-00Z
     environment:
       MINIO_ACCESS_KEY: AKIAIOSFODNN7EXAMPLE
       MINIO_SECRET_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+      MINIO_DOMAIN: minio.loc
     ports:
       - 9000:9000
     volumes:
       - ./minio_data:/data
-      # - ./mc:/mc
+      # - ./mc:/bin/mc
     command: server /data
-#     networks:
-#       s3_net:
-#         ipv4_address: 172.18.18.10
-#   dns:
-#     restart: always
-#     image: strm/dnsmasq
-#     volumes:
-#         - ./.compose/dnsmasq.conf:/etc/dnsmasq.conf
-#     cap_add:
-#         - NET_ADMIN
-#     networks:
-#       s3_net:
-#         ipv4_address: 172.18.18.5
+    networks:
+      s3_net:
+        aliases:
+          - minio.loc
+          - myback-space.minio.loc
 
-# networks:
-#   s3_net:
-#     driver: bridge
-#     driver_opts:
-#       com.docker.network.enable_ipv6: "false"
-#     ipam:
-#       driver: default
-#       config:
-#       - subnet: 172.18.18.0/24
-#         gateway: 172.18.18.1
+networks:
+  s3_net:

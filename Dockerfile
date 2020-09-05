@@ -1,6 +1,6 @@
-FROM nginx:alpine
+FROM nginx:1.18-alpine
 
-COPY nginx/ /etc/nginx/
+COPY nginx/nginx.conf /etc/nginx/
+COPY njs /etc/nginx/njs
 
 EXPOSE 8080/tcp
-USER nginx
