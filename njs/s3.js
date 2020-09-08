@@ -6,7 +6,7 @@ var _payload = 'UNSIGNED-PAYLOAD';
 var _region = 'us-east-1';
 var _service = 's3';
 var _type_req = 'aws4_request';
-var _user_agent = 'njs-pypi/2.0.0';
+var _user_agent = 'njs-pypi/2';
 // const end
 
 // environment variables start
@@ -24,16 +24,15 @@ var debug_on = env_bool.test(env.DEBUG);
 var date_now = new Date();
 var URL = _parse_url(s3_endpoint);
 var canonical_querystring = 'delimiter=%2F&list-type=2&max-keys=1000&prefix=';
-// var host = `${s3_bucket}.${url.host}`;
 
 function _parse_url(raw_url) {
     var _url = {};
-    var parsed_url = /^((?<schema>http[s]?):\/\/){0,1}(?<host>[^\/]*)(?<path>[^?\n]*)\?{0,1}(?<query>.*)/g.exec(raw_url);
+    var parsed_url = /^((?<schema>http[s]?):\/\/)?(?<host>[^\/]+)(?<path>[^?\n]*)\??(?<query>.*)/g.exec(raw_url);
 
-    if (parsed_url.groups.schema === undefined || parsed_url.groups.schema === '') {
-        _url['schema'] = s3_ssl_disable ? 'http' : 'https';;
-    } else {
+    if (parsed_url.groups.schema) {
         _url['schema'] = parsed_url.groups.schema;
+    } else {
+        _url['schema'] = 'http';
     }
 
     _url['host'] = parsed_url.groups.host;
@@ -128,7 +127,7 @@ function request(r) {
     function call_back(res) {
         var body = res.responseBody;
 
-        if (r.method !== 'PUT' && resp.status < 400 && v.postfix === '') {
+        if (r.method !== 'PUT' && resp.status < 400 && !v.postfix) {
             r.headersOut['Content-Type'] = "text/html; charset=utf-8";
             body = toHTML(body);
         }
@@ -140,7 +139,7 @@ function request(r) {
     if (r.uri === '/') {
         // root
         _subrequest_uri = `/?${canonical_querystring}`;
-    } else if (v.prefix !== '' && v.postfix === '') {
+    } else if (v.prefix && !v.postfix) {
         // folder
         _subrequest_uri = `/?${canonical_querystring}${v.prefix}%2F`;
     } else {
