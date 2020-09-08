@@ -28,24 +28,24 @@ var canonical_querystring = 'delimiter=%2F&list-type=2&max-keys=1000&prefix=';
 
 function _parse_url(raw_url) {
     var _url = {};
-    var default_schema = s3_ssl_disable ? 'http' : 'https';
     var parsed_url = /^((?<schema>http[s]?):\/\/){0,1}(?<host>[^\/]*)(?<path>[^?\n]*)\?{0,1}(?<query>.*)/g.exec(raw_url);
 
     if (parsed_url.groups.schema === undefined || parsed_url.groups.schema === '') {
-        _url['schema'] = default_schema;
+        _url['schema'] = s3_ssl_disable ? 'http' : 'https';;
+    } else {
+        _url['schema'] = parsed_url.groups.schema;
     }
 
     _url['host'] = parsed_url.groups.host;
 
     var host_port = parsed_url.groups.host.split(':');
     if (host_port.length == 2) {
-        if (host_port[1] == 80 || host_port[1] == 443) {
-            _url.host = host_port[0]
+        if ((_url['schema'] == 'http' && host_port[1] == 80) || (_url['schema'] == 'https' && host_port[1] == 443)) {
+            _url['host'] = host_port[0];
         }
     }
 
     _url['path'] = parsed_url.groups.path;
-    _url['raw_query'] = parsed_url.groups.query;
 
     return _url
 }
