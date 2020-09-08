@@ -39,7 +39,7 @@ function request(r) {
 
     function call_back(resp) {
         var body = resp.responseBody;
-        if (r.method !== 'PUT' && resp.status < 400 && v.postfix === '') {
+        if (r.method !== 'PUT' && resp.status < 400 && !v.postfix) {
             r.headersOut['Content-Type'] = "text/html; charset=utf-8";
             body = toHTML(body);
         }
@@ -51,7 +51,7 @@ function request(r) {
     if (r.uri === '/') {
         // root
         _subrequest_uri = '/?delimiter=/';
-    } else if (v.prefix !== '' && v.postfix === '') {
+    } else if (v.prefix && !v.postfix) {
         // folder
         var slash = v.prefix.endsWith('/') ? '' : '/';
         _subrequest_uri = '/?prefix=' + v.prefix + slash;
